@@ -66,10 +66,6 @@
     z-index: 1;
 }
 
-.bg-image {
-    opacity: 1;
-}
-
 .question,
 .answer {
     max-width: 70%;
@@ -88,31 +84,11 @@
     background-color: lightgray;
 }
 
-.answerCode {
-    margin-top: 1.5rem;
-    align-self: center;
-    height: 40%;
-    width: 95%;
-    margin-bottom: 10px;
-    padding: 5px;
-    border-radius: 5px;
-    background-color: lightgrey;
-    overflow-y: scroll;
-}
-
 .form {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
-}
-
-.formCode {
-    display: flex;
-    flex-direction: column;
-    height: 50%;
-    width: 100%;
-    margin-bottom: 10px;
 }
 
 .input {
@@ -126,19 +102,6 @@
     outline: none;
 }
 
-.inputCode {
-    align-self: center;
-    height: 88%;
-    width: 95%;
-    margin-bottom: 10px;
-    padding: 5px;
-    border-radius: 5px;
-    border: 0;
-    background-color: rgb(22, 22, 22);
-    color: white;
-    text-align: left;
-}
-
 .submit {
     height: 100%;
     width: 20%;
@@ -146,24 +109,6 @@
     margin-left: 5px;
     border: lightgray 5px solid;
     border-radius: 10px;
-}
-
-.submitCode {
-    align-self: center;
-    width: 98%;
-    background-color: lightgray;
-    border: lightgray 5px solid;
-    border-radius: 10px;
-}
-
-.language-button{
-    position: absolute;
-    top: 0.5%;
-    right: 7%;
-    border-radius: 5px;
-    border: 1px solid white;
-    background-color: lightgrey;
-    color: white;
 }
 
 .exit-button{

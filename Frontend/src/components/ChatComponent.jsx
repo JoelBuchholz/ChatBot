@@ -82,8 +82,6 @@ const ChatComponent = () => {
         ))}
 
         {isLoading && <div className="loading"></div>}
-        <div className="overlay top-overlay"></div>
-        <div className="overlay bottom-overlay"></div>
       </div>
       <form className="form" onSubmit={handleSubmitChatForm}>
         <input
