@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import { PrismaClient } from "@prisma/client";
-/* import responses from "./lib/responses.js"; */
+import seed from "./lib/seed.js";
 
 dotenv.config();
 
@@ -14,40 +14,105 @@ app.use(cors());
 app.use(express.json());
 
 app.post("/api/hallo", async (req, res) => {
-/*   async function main() {
-    const prismaData = Object.entries(responses).map(([question, answer]) => ({
-      question,
-      answer,
-    }));
-
-    for (const data of prismaData) {
-      await prisma.questionAndAnswer.create({
-        data,
-      });
-    }
-  }
-
-  main()
-    .then(() => {
-      console.log(
-        "Data has been successfully inserted into the Prisma database."
-      );
-    })
-    .catch((e) => {
-      console.error(e);
-    })
-    .finally(async () => {
-      await prisma.$disconnect();
-    }); */
   const { question } = req.body;
   const lowerCaseText = question.toLowerCase();
   const words = lowerCaseText.split(/\s+/);
 
-  const allResponses = await prisma.questionAndAnswer.findMany();
-  const responses = {};
-  allResponses.forEach(({ question, answer }) => {
-    responses[question] = answer;
-  });
+  if (
+    question ===
+    `User:${process.env.CHATBOT_USER} Password:${process.env.CHATBOT_PASSWORD} Migration`
+  ) {
+    const prismaData = Object.entries(seed).map(([question, answer]) => ({
+      question,
+      answer,
+    }));
+
+    try {
+      const existingQuestions = await prisma.questionAndAnswer.findMany({
+        select: { question: true },
+      });
+
+      const existingQuestionsSet = new Set(
+        existingQuestions.map((q) => q.question)
+      );
+      let newEntriesCount = 0;
+
+      for (const data of prismaData) {
+        if (!existingQuestionsSet.has(data.question)) {
+          await prisma.questionAndAnswer.create({
+            data,
+          });
+          newEntriesCount++;
+        }
+      }
+
+      res.send(`Migration completed. ${newEntriesCount} new entries added.`);
+      return;
+    } catch (error) {
+      console.error("Database connection error:", error);
+      res.send("Database connection error");
+      return;
+    }
+  }
+
+  if (
+    question.startsWith(
+      `User:${process.env.CHATBOT_USER} Password:${process.env.CHATBOT_PASSWORD} Add `
+    )
+  ) {
+    const [_, questionPart, answerPart] = question.match(
+      /Question:(.*) Answer:(.*)/
+    );
+    try {
+      if (questionPart && answerPart) {
+        await prisma.questionAndAnswer.create({
+          data: {
+            question: questionPart.trim(),
+            answer: answerPart.trim(),
+          },
+        });
+        res.send(
+          `Entry added. Question: "${questionPart.trim()}", Answer: "${answerPart.trim()}"`
+        );
+      } else {
+        res.send(
+          "Invalid format. Please use 'Question:<your question> Answer:<your answer>'"
+        );
+      }
+      return;
+    } catch (error) {
+      console.error("Database connection error:", error);
+      res.send("Database connection error");
+      return;
+    }
+  }
+
+  if (
+    question ===
+    `User:${process.env.CHATBOT_USER} Password:${process.env.CHATBOT_PASSWORD} DeleteAll`
+  ) {
+    try {
+      const deleteResult = await prisma.questionAndAnswer.deleteMany({});
+      res.send(`All entries deleted. ${deleteResult.count} entries removed.`);
+      return;
+    } catch (error) {
+      console.error("Database connection error:", error);
+      res.send("Database connection error");
+      return;
+    }
+  }
+
+  let responses;
+  try {
+    const allResponses = await prisma.questionAndAnswer.findMany();
+    responses = {};
+    allResponses.forEach(({ question, answer }) => {
+      responses[question] = answer;
+    });
+  } catch (error) {
+    console.error("Database connection error:", error);
+    responses = seed;
+  }
 
   let responseText = [];
   for (const [keyword, reply] of Object.entries(responses)) {
@@ -75,7 +140,7 @@ app.listen(PORT, () => {
   console.log(`Visit http://localhost:${PORT} to view the server`);
 });
 
-process.on('SIGINT', async () => {
+process.on("SIGINT", async () => {
   await prisma.$disconnect();
   process.exit();
 });
